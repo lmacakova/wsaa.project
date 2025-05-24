@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Inventory</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    input, button { margin: 5px; padding: 5px; }
+    table, th, td { border: 1px solid black; border-collapse: collapse; padding: 8px; }
+    th { background-color: #f2f2f2; }
+    .section { margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+
+  <h1>Inventory Management</h1>
+
+  <!-- Add Product -->
+  <div class="section">
+    <h3>Add Product</h3>
+    <input type="text" id="name" placeholder="Name">
+    <input type="text" id="description" placeholder="Description">
+    <input type="number" id="quantity" placeholder="Quantity">
+    <input type="text" id="category" placeholder="Category">
+    <input type="number" id="price" placeholder="Price">
+    <input type="text" id="supplier" placeholder="Supplier">
+    <button onclick="addProduct()">Add</button>
+  </div>
+
+  <!-- Update Product -->
+  <div class="section">
+    <h3>Update Product</h3>
+    <input type="number" id="updateId" placeholder="Product ID">
+    <input type="text" id="u_name" placeholder="Name">
+    <input type="text" id="u_description" placeholder="Description">
+    <input type="number" id="u_quantity" placeholder="Quantity">
+    <input type="text" id="u_category" placeholder="Category">
+    <input type="number" id="u_price" placeholder="Price">
+    <input type="text" id="u_supplier" placeholder="Supplier">
+    <button onclick="updateProduct()">Update</button>
+  </div>
+
+  <!-- Get Products -->
+  <div class="section">
+    <h3>Query Products</h3>
+    <button onclick="getAllProducts()">Get All Products</button>
+    <input type="number" id="productId" placeholder="Product ID">
+    <button onclick="getProductById()">Get by ID</button>
+  </div>
+
+  <!-- Delete Product -->
+  <div class="section">
+    <h3>Delete Product</h3>
+    <input type="number" id="deleteId" placeholder="Product ID">
+    <button onclick="deleteProduct()">Delete</button>
+  </div>
+
+  <!-- Output -->
+  <div id="output"></div>
+
+  <script>
+    function clearOutput() {
+      document.getElementById('output').innerHTML = '';
+    }
+
+    function renderTable(data) {
+      clearOutput();
+      if (!data || (Array.isArray(data) && data.length === 0)) {
+        document.getElementById('output').innerHTML = "<p>No data found.</p>";
+        return;
+      }
+
+      const rows = Array.isArray(data) ? data : [data];
+      let html = '<table><tr><th>ID</th><th>Name</th><th>Description</th><th>Quantity</th><th>Category</th><th>Price</th><th>Supplier</th></tr>';
+      for (const product of rows) {
+        html += `<tr>
+          <td>${product.id}</td>
+          <td>${product.name}</td>
+          <td>${product.description || ''}</td>
+          <td>${product.quantity}</td>
+          <td>${product.category || ''}</td>
+          <td>${product.price}</td>
+          <td>${product.supplier || ''}</td>
+        </tr>`;
+      }
+      html += '</table>';
+      document.getElementById('output').innerHTML = html;
+    }
+
+    function getAllProducts() {
+      clearOutput();
+      fetch('/api/products')
+        .then(res => res.json())
+        .then(data => renderTable(data))
+        .catch(err => document.getElementById('output').innerHTML = `<p>Error: ${err.message}</p>`);
+    }
+
+    function getProductById() {
+      clearOutput();
+      const id = document.getElementById('productId').value;
+      if (!id) return alert('Please enter a Product ID.');
+
+      fetch(`/api/products/${id}`)
+        .then(res => {
+          if (!res.ok) throw new Error('Product not found');
+          return res.json();
+        })
+        .then(data => renderTable(data))
+        .catch(err => document.getElementById('output').innerHTML = `<p style="color:red;">${err.message}</p>`);
+    }
+
+    function addProduct() {
+      clearOutput();
+      const data = {
+        name: document.getElementById('name').value,
+        description: document.getElementById('description').value,
+        quantity: parseInt(document.getElementById('quantity').value) || 0,
+        category: document.getElementById('category').value,
+        price: parseFloat(document.getElementById('price').value),
+        supplier: document.getElementById('supplier').value
+      };
+
+      fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+        .then(res => res.json())
+        .then(res => document.getElementById('output').innerHTML = `<p>${res.message}. ID: ${res.product_id}</p>`)
+        .catch(err => document.getElementById('output').innerHTML = `<p>Error: ${err.message}</p>`);
+    }
+
+    function updateProduct() {
+      clearOutput();
+      const id = document.getElementById('updateId').value;
+      const data = {
+        name: document.getElementById('u_name').value,
+        description: document.getElementById('u_description').value,
+        quantity: parseInt(document.getElementById('u_quantity').value) || 0,
+        category: document.getElementById('u_category').value,
+        price: parseFloat(document.getElementById('u_price').value),
+        supplier: document.getElementById('u_supplier').value
+      };
+
+      fetch(`/api/products/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+        .then(res => res.json())
+        .then(res => document.getElementById('output').innerHTML = `<p>${res.message || res.error}</p>`)
+        .catch(err => document.getElementById('output').innerHTML = `<p>Error: ${err.message}</p>`);
+    }
+
+    function deleteProduct() {
+      clearOutput();
+      const id = document.getElementById('deleteId').value;
+      if (!id) return alert('Please enter Product ID to delete.');
+
+      fetch(`/api/products/${id}`, { method: 'DELETE' })
+        .then(res => res.json())
+        .then(res => document.getElementById('output').innerHTML = `<p>${res.message || res.error}</p>`)
+        .catch(err => document.getElementById('output').innerHTML = `<p>Error: ${err.message}</p>`);
+    }
+  </script>
+
+</body>
+</html>
+
