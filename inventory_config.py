@@ -7,5 +7,5 @@ def get_conn():
         user="root",           
         password="Lucia",    
         database="inventory",
-        cursorclass=pymysql.cursors.DictCursor  # return results as dictionaries
+        cursorclass=pymysql.cursors.DictCursor  
     )

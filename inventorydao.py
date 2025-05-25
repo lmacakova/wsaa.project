@@ -21,10 +21,76 @@ class ProductDAO:
         finally:
             conn.close()
 
+    
+    def get_by_name(name):
+        conn = get_conn()
+        try:
+            with conn.cursor() as cursor:
+                query = "SELECT * FROM product WHERE name LIKE %s"
+                like_pattern = f"%{name}%"
+                cursor.execute(query, (like_pattern,))
+                return cursor.fetchall()
+        finally:
+            conn.close()
+
+    def get_by_description(description):
+        conn = get_conn()
+        try:
+            with conn.cursor() as cursor:
+                query = "SELECT * FROM product WHERE description LIKE %s"
+                like_pattern = f"%{description}%"
+                cursor.execute(query, (like_pattern,))
+                return cursor.fetchall()
+        finally:
+            conn.close() 
+
+    
+    def get_by_category(category):
+        conn = get_conn()
+        try:
+            with conn.cursor() as cursor:
+                query = "SELECT * FROM product WHERE category LIKE %s"
+                like_pattern = f"%{category}%"
+                cursor.execute(query, (like_pattern,))
+                return cursor.fetchall()
+        finally:
+            conn.close()  
+
+    def get_by_supplier(suplier):
+        conn = get_conn()
+        try:
+            with conn.cursor() as cursor:
+                query = "SELECT * FROM product WHERE suplier LIKE %s"
+                like_pattern = f"%{suplier}%"
+                cursor.execute(query, (like_pattern,))
+                return cursor.fetchall()
+        finally:
+            conn.close()           
+
+    def get_by_quantity(quantity):
+        conn = get_conn()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT * FROM product WHERE quantity = %s", (quantity,))
+                return cursor.fetchall()
+        finally:
+            conn.close()
+
+
+
+
     def insert(data):
         conn = get_conn()
         try:
             with conn.cursor() as cursor:
+                # First, check if a product with the same name already exists
+                sql_check = "SELECT COUNT(*) FROM product WHERE name = %s"
+                cursor.execute(sql_check, (data['name'],))
+                result = cursor.fetchone()
+                if result[0] > 0:
+                    return {"error": "Product with this name already exists."}, 400  # Handle duplicate product name
+                
+                # If no duplicate, proceed with inserting the new product
                 sql = """
                     INSERT INTO product (name, description, quantity, category, price, supplier)
                     VALUES (%s, %s, %s, %s, %s, %s)
@@ -39,9 +105,11 @@ class ProductDAO:
                 )
                 cursor.execute(sql, values)
                 conn.commit()
-                return cursor.lastrowid
+                return {"message": "Product added", "product_id": cursor.lastrowid}, 201  # Return success with product ID
+
         finally:
             conn.close()
+
     def update(product_id, data):
         conn = get_conn()
         try:

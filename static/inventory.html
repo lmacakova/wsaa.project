@@ -1,169 +1,231 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Inventory</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    input, button { margin: 5px; padding: 5px; }
-    table, th, td { border: 1px solid black; border-collapse: collapse; padding: 8px; }
-    th { background-color: #f2f2f2; }
-    .section { margin-bottom: 20px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management</title>
+    <!-- Include jQuery for AJAX requests -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Fetch all products and list them using AJAX
+        function fetchProducts() {
+            $.ajax({
+                url: '/api/products',
+                type: 'GET',
+                success: function(data) {
+                    let productList = $('#product-list');
+                    productList.empty();  // Clear current list
+                    data.forEach(function(product) {
+                        let listItem = `
+                            <li>
+                                ID: ${product.id}, Name: ${product.name}, Description: ${product.description}, 
+                                Category: ${product.category}, Quantity: ${product.quantity}, 
+                                Supplier: ${product.supplier}
+                                <button onclick="loadProductForEdit(${product.id})">Edit</button>
+                                <button onclick="deleteProduct(${product.id})">Delete</button>
+                            </li>
+                        `;
+                        productList.append(listItem);
+                    });
+                },
+                error: function(error) {
+                    alert('Error fetching products');
+                }
+            });
+        }
+
+        // Search functionality with AJAX
+        function searchProduct() {
+            let searchType = $('#search-type').val();
+            let searchTerm = $('#search-term').val();
+            
+            $.ajax({
+                url: `/api/products/search/${searchType}`,
+                type: 'GET',
+                data: {[searchType]: searchTerm},
+                success: function(data) {
+                    let productList = $('#product-list');
+                    productList.empty();  // Clear current list
+                    if (data && data.length > 0) {
+                        data.forEach(function(product) {
+                            let listItem = `
+                                <li>
+                                    ID: ${product.id}, Name: ${product.name}, Description: ${product.description}, 
+                                    Category: ${product.category}, Quantity: ${product.quantity}, 
+                                    Supplier: ${product.supplier}
+                                    <button onclick="loadProductForEdit(${product.id})">Edit</button>
+                                </li>
+                            `;
+                            productList.append(listItem);
+                        });
+                    } else {
+                        productList.append('<li>No product found with this search.</li>');
+                    }
+                },
+                error: function(error) {
+                    alert('Error searching products');
+                }
+            });
+        }
+
+        // Add new product with AJAX
+        function addProduct() {
+            let productData = {
+                name: $('#product-name').val(),
+                description: $('#product-desc').val(),
+                category: $('#product-category').val(),
+                quantity: $('#product-quantity').val(),
+                price: $('#product-price').val(),
+                supplier: $('#product-supplier').val()
+            };
+
+            $.ajax({
+                url: '/api/products',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(productData),
+                success: function(response) {
+                    alert(response.message);
+                    fetchProducts();  // Refresh the product list after adding
+                },
+                error: function(error) {
+                    alert(error.responseJSON.error || 'Error adding product');
+                }
+            });
+        }
+
+        // Load product data for editing and show the edit form
+        function loadProductForEdit(productId) {
+            $.ajax({
+                url: `/api/products/${productId}`,
+                type: 'GET',
+                success: function(product) {
+                    $('#edit-product-id').val(product.id);
+                    $('#edit-product-name').val(product.name);
+                    $('#edit-product-desc').val(product.description);
+                    $('#edit-product-category').val(product.category);
+                    $('#edit-product-quantity').val(product.quantity);
+                    $('#edit-product-price').val(product.price);
+                    $('#edit-product-supplier').val(product.supplier);
+
+                    $('#edit-product-form').show();  // Show the edit form
+                },
+                error: function(error) {
+                    alert('Error loading product for edit');
+                }
+            });
+        }
+
+        // Update product after editing using AJAX
+        function updateProduct() {
+            let productData = {
+                name: $('#edit-product-name').val(),
+                description: $('#edit-product-desc').val(),
+                category: $('#edit-product-category').val(),
+                quantity: $('#edit-product-quantity').val(),
+                price: $('#edit-product-price').val(),
+                supplier: $('#edit-product-supplier').val()
+            };
+
+            let productId = $('#edit-product-id').val();
+
+            $.ajax({
+                url: `/api/products/${productId}`,
+                type: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(productData),
+                success: function(response) {
+                    alert(response.message);
+                    fetchProducts();  // Refresh the product list after updating
+                    $('#edit-product-form').hide();  // Hide the form
+                },
+                error: function(error) {
+                    alert(error.responseJSON.error || 'Error updating product');
+                }
+            });
+        }
+
+        // Delete a product using AJAX
+        function deleteProduct(productId) {
+            $.ajax({
+                url: `/api/products/${productId}`,
+                type: 'DELETE',
+                success: function(response) {
+                    alert(response.message);
+                    fetchProducts();  // Refresh the product list after deletion
+                },
+                error: function(error) {
+                    alert('Error deleting product');
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            fetchProducts();  // Load products when the page is ready
+
+            $('#search-btn').click(searchProduct);  // Attach search functionality
+            $('#add-product-btn').click(addProduct);  // Attach add product functionality
+            $('#update-product-btn').click(updateProduct);  // Attach update product functionality
+        });
+    </script>
 </head>
 <body>
+    <h1>Inventory Management</h1>
+    <h2>Search Products</h2>
+    <select id="search-type">
+        <option value="name">Name</option>
+        <option value="description">Description</option>
+        <option value="category">Category</option>
+        <option value="supplier">Supplier</option>
+        <option value="quantity">Quantity</option>
+        <option value="id">ID</option> <!-- Option for searching by ID -->
+    </select>
+    <input type="text" id="search-term" placeholder="Search term" />
+    <button id="search-btn">Search</button>
 
-  <h1>Inventory Management</h1>
+    <h2>Add New Product</h2>
+    <label for="product-name">Name: </label>
+    <input type="text" id="product-name" placeholder="Product Name" /><br/>
+    <label for="product-desc">Description: </label>
+    <input type="text" id="product-desc" placeholder="Description" /><br/>
+    <label for="product-category">Category: </label>
+    <input type="text" id="product-category" placeholder="Category" /><br/>
+    <label for="product-quantity">Quantity: </label>
+    <input type="number" id="product-quantity" placeholder="Quantity" /><br/>
+    <label for="product-price">Price: </label>
+    <input type="number" id="product-price" placeholder="Price" /><br/>
+    <label for="product-supplier">Supplier: </label>
+    <input type="text" id="product-supplier" placeholder="Supplier" /><br/>
+    <button id="add-product-btn">Add Product</button>
 
-  <!-- Add Product -->
-  <div class="section">
-    <h3>Add Product</h3>
-    <input type="text" id="name" placeholder="Name">
-    <input type="text" id="description" placeholder="Description">
-    <input type="number" id="quantity" placeholder="Quantity">
-    <input type="text" id="category" placeholder="Category">
-    <input type="number" id="price" placeholder="Price">
-    <input type="text" id="supplier" placeholder="Supplier">
-    <button onclick="addProduct()">Add</button>
-  </div>
-
-  <!-- Update Product -->
-  <div class="section">
-    <h3>Update Product</h3>
-    <input type="number" id="updateId" placeholder="Product ID">
-    <input type="text" id="u_name" placeholder="Name">
-    <input type="text" id="u_description" placeholder="Description">
-    <input type="number" id="u_quantity" placeholder="Quantity">
-    <input type="text" id="u_category" placeholder="Category">
-    <input type="number" id="u_price" placeholder="Price">
-    <input type="text" id="u_supplier" placeholder="Supplier">
-    <button onclick="updateProduct()">Update</button>
-  </div>
-
-  <!-- Get Products -->
-  <div class="section">
-    <h3>Query Products</h3>
-    <button onclick="getAllProducts()">Get All Products</button>
-    <input type="number" id="productId" placeholder="Product ID">
-    <button onclick="getProductById()">Get by ID</button>
-  </div>
-
-  <!-- Delete Product -->
-  <div class="section">
-    <h3>Delete Product</h3>
-    <input type="number" id="deleteId" placeholder="Product ID">
-    <button onclick="deleteProduct()">Delete</button>
-  </div>
-
-  <!-- Output -->
-  <div id="output"></div>
-
-  <script>
-    function clearOutput() {
-      document.getElementById('output').innerHTML = '';
-    }
-
-    function renderTable(data) {
-      clearOutput();
-      if (!data || (Array.isArray(data) && data.length === 0)) {
-        document.getElementById('output').innerHTML = "<p>No data found.</p>";
-        return;
-      }
-
-      const rows = Array.isArray(data) ? data : [data];
-      let html = '<table><tr><th>ID</th><th>Name</th><th>Description</th><th>Quantity</th><th>Category</th><th>Price</th><th>Supplier</th></tr>';
-      for (const product of rows) {
-        html += `<tr>
-          <td>${product.id}</td>
-          <td>${product.name}</td>
-          <td>${product.description || ''}</td>
-          <td>${product.quantity}</td>
-          <td>${product.category || ''}</td>
-          <td>${product.price}</td>
-          <td>${product.supplier || ''}</td>
-        </tr>`;
-      }
-      html += '</table>';
-      document.getElementById('output').innerHTML = html;
-    }
-
-    function getAllProducts() {
-      clearOutput();
-      fetch('/api/products')
-        .then(res => res.json())
-        .then(data => renderTable(data))
-        .catch(err => document.getElementById('output').innerHTML = `<p>Error: ${err.message}</p>`);
-    }
-
-    function getProductById() {
-      clearOutput();
-      const id = document.getElementById('productId').value;
-      if (!id) return alert('Please enter a Product ID.');
-
-      fetch(`/api/products/${id}`)
-        .then(res => {
-          if (!res.ok) throw new Error('Product not found');
-          return res.json();
-        })
-        .then(data => renderTable(data))
-        .catch(err => document.getElementById('output').innerHTML = `<p style="color:red;">${err.message}</p>`);
-    }
-
-    function addProduct() {
-      clearOutput();
-      const data = {
-        name: document.getElementById('name').value,
-        description: document.getElementById('description').value,
-        quantity: parseInt(document.getElementById('quantity').value) || 0,
-        category: document.getElementById('category').value,
-        price: parseFloat(document.getElementById('price').value),
-        supplier: document.getElementById('supplier').value
-      };
-
-      fetch('/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      })
-        .then(res => res.json())
-        .then(res => document.getElementById('output').innerHTML = `<p>${res.message}. ID: ${res.product_id}</p>`)
-        .catch(err => document.getElementById('output').innerHTML = `<p>Error: ${err.message}</p>`);
-    }
-
-    function updateProduct() {
-      clearOutput();
-      const id = document.getElementById('updateId').value;
-      const data = {
-        name: document.getElementById('u_name').value,
-        description: document.getElementById('u_description').value,
-        quantity: parseInt(document.getElementById('u_quantity').value) || 0,
-        category: document.getElementById('u_category').value,
-        price: parseFloat(document.getElementById('u_price').value),
-        supplier: document.getElementById('u_supplier').value
-      };
-
-      fetch(`/api/products/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      })
-        .then(res => res.json())
-        .then(res => document.getElementById('output').innerHTML = `<p>${res.message || res.error}</p>`)
-        .catch(err => document.getElementById('output').innerHTML = `<p>Error: ${err.message}</p>`);
-    }
-
-    function deleteProduct() {
-      clearOutput();
-      const id = document.getElementById('deleteId').value;
-      if (!id) return alert('Please enter Product ID to delete.');
-
-      fetch(`/api/products/${id}`, { method: 'DELETE' })
-        .then(res => res.json())
-        .then(res => document.getElementById('output').innerHTML = `<p>${res.message || res.error}</p>`)
-        .catch(err => document.getElementById('output').innerHTML = `<p>Error: ${err.message}</p>`);
-    }
-  </script>
-
+    <h2>Edit Product</h2>
+    <form id="edit-product-form" style="display:none;">
+        <input type="hidden" id="edit-product-id" />
+        <label for="edit-product-name">Name: </label>
+        <input type="text" id="edit-product-name" /><br/>
+        <label for="edit-product-desc">Description: </label>
+        <input type="text" id="edit-product-desc" /><br/>
+        <label for="edit-product-category">Category: </label>
+        <input type="text" id="edit-product-category" /><br/>
+        <label for="edit-product-quantity">Quantity: </label>
+        <input type="number" id="edit-product-quantity" /><br/>
+        <label for="edit-product-price">Price: </label>
+        <input type="number" id="edit-product-price" /><br/>
+        <label for="edit-product-supplier">Supplier: </label>
+        <input type="text" id="edit-product-supplier" /><br/>
+        <button type="button" id="update-product-btn">Update Product</button>
+    </form>
+    <h2>Product List</h2>
+    <ul id="product-list">
+        <!-- Products will be listed here -->
+    </ul>
+    <button onclick="fetchProducts()">Get All Products</button>
 </body>
 </html>
+
+
+
+
+
+
 
