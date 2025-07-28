@@ -27,8 +27,9 @@ def search_by_id():
         return jsonify({'error': 'ID must be an integer'}), 400
     product = ProductDAO.get_by_id(product_id)
     if product:
-        return jsonify(product)
-    return jsonify({'error': 'Product not found'}), 404
+        return jsonify([product])  # Return the product as an array (to match frontend)
+    return jsonify([])  # No product found, return empty array
+
 
 # Search products by name
 @app.route('/api/products/search/name', methods=['GET'])
@@ -60,8 +61,10 @@ def search_by_supplier():
     supplier = request.args.get('supplier')
     if not supplier:
         return jsonify({'error': 'Missing supplier parameter'}), 400
-    return jsonify(ProductDAO.get_by_supplier(supplier))
-
+    products = ProductDAO.get_by_supplier(supplier)
+    if products:
+        return jsonify(products)
+    return jsonify([])  # No products found for that supplier, return empty array
 # Search products by quantity
 @app.route('/api/products/search/quantity', methods=['GET'])
 def search_by_quantity():

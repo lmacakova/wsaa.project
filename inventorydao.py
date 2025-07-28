@@ -7,7 +7,7 @@ class ProductDAO:
         conn = get_conn()
         try:
             with conn.cursor() as cursor:
-                cursor.execute("SELECT * FROM product")
+                cursor.execute("SELECT * FROM product ORDER BY name ASC ")
                 return cursor.fetchall()
         finally:
             conn.close()
@@ -26,7 +26,7 @@ class ProductDAO:
         conn = get_conn()
         try:
             with conn.cursor() as cursor:
-                query = "SELECT * FROM product WHERE name LIKE %s"
+                query = "SELECT * FROM product WHERE name LIKE %s ORDER BY name ASC"
                 like_pattern = f"%{name}%"
                 cursor.execute(query, (like_pattern,))
                 return cursor.fetchall()
@@ -37,7 +37,7 @@ class ProductDAO:
         conn = get_conn()
         try:
             with conn.cursor() as cursor:
-                query = "SELECT * FROM product WHERE description LIKE %s"
+                query = "SELECT * FROM product WHERE description LIKE %s ORDER BY name ASC"
                 like_pattern = f"%{description}%"
                 cursor.execute(query, (like_pattern,))
                 return cursor.fetchall()
@@ -49,19 +49,19 @@ class ProductDAO:
         conn = get_conn()
         try:
             with conn.cursor() as cursor:
-                query = "SELECT * FROM product WHERE category LIKE %s"
+                query = "SELECT * FROM product WHERE category LIKE %s ORDER BY name ASC"
                 like_pattern = f"%{category}%"
                 cursor.execute(query, (like_pattern,))
                 return cursor.fetchall()
         finally:
             conn.close()  
 
-    def get_by_supplier(suplier):
+    def get_by_supplier(supplier):
         conn = get_conn()
         try:
             with conn.cursor() as cursor:
-                query = "SELECT * FROM product WHERE suplier LIKE %s"
-                like_pattern = f"%{suplier}%"
+                query = "SELECT * FROM product WHERE supplier LIKE %s ORDER BY name ASC"
+                like_pattern = f"%{supplier}%"
                 cursor.execute(query, (like_pattern,))
                 return cursor.fetchall()
         finally:
@@ -71,7 +71,7 @@ class ProductDAO:
         conn = get_conn()
         try:
             with conn.cursor() as cursor:
-                cursor.execute("SELECT * FROM product WHERE quantity = %s", (quantity,))
+                cursor.execute("SELECT * FROM product WHERE quantity <= %s ORDER BY name ASC", (quantity,))
                 return cursor.fetchall()
         finally:
             conn.close()
