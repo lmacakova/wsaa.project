@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory Management</title>
+    <link rel="stylesheet" href="style.css"></link>
     <!-- Include jQuery for AJAX requests -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script>
@@ -174,23 +175,31 @@
     <div1 style="display:block; background-color: bisque; margin-left: auto; margin-right:auto; width: 69%; border-radius: 25px;">
         <div2 style="display:block; text-align: center;">
             <h1>Inventory Management</h1>
+            <p id="dateTime"></p>
+            <script>
+            const d = new Date();
+            let text = d.toLocaleString();
+            document.getElementById("dateTime").innerHTML = text;
+            </script>
         </div2>
-        <div3 style="display:block; text-align: center; width: 33%">
-            <h2>Search Products</h2>
-            <select id="search-type">
-                <option value="name">Name</option>
-                <option value="description">Description</option>
-                <option value="category">Category</option>
-                <option value="supplier">Supplier</option>
-                <option value="quantity">Quantity</option>
-                <option value="id">ID</option> <!-- Option for searching by ID -->
-            </select>
-            <input type="text" id="search-term" placeholder="Search term" />
-            <button id="search-btn">Search</button>
+        <div3 style="display:block; width: 33%;">
+            <h2 style="text-align: center;">Search Products</h2>
+            <div8>
+                <select id="search-type">
+                    <option value="name">Name</option>
+                    <option value="description">Description</option>
+                    <option value="category">Category</option>
+                    <option value="supplier">Supplier</option>
+                    <option value="quantity">Quantity</option>
+                    <option value="id">ID</option> <!-- Option for searching by ID -->
+                </select>
+                <input type="text" id="search-term" placeholder="Search term" />
+                <button id="search-btn">Search</button>
+            </div8>
         </div3>            
-        <div4 style="display:block; width: 33%">
+        <div4 style="display:block; width: 33%;">
             <h2>Add New Product</h2>
-            <form id="add-product-form">
+            <form id="add-product-form"> 
                 <label for="product-name">Name: </label>
                 <input type="text" id="product-name" placeholder="Product Name" /><br/>
                 <label for="product-desc">Description: </label>
@@ -206,7 +215,7 @@
                 <button id="add-product-btn">Add Product</button>
             </form>
         </div4>
-        <div5 style="display:block; width: 33%">
+        <div5 style="display:block; width: 33%;">
         <h2>Edit Product</h2>    
         <form id="edit-product-form">
             <input type="hidden" id="edit-product-id" />
@@ -238,6 +247,7 @@
 
         </div7>
     </div1>
+    
 </body>
 </html>
 
