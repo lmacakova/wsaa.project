@@ -1,8 +1,181 @@
-body {background-image: ;
-
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-
-h2 {
-    text-align: center; border-style: solid;
+body {
+    font-family: Arial, sans-serif;
+    background-image: url('supermarket-aisle-generated-by-ai.jpg');
+    padding: 20px;
+    color: #333;
 }
+
+/* Main Wrapper */
+.pad {
+    background-color: bisque;
+    margin: 0 auto;
+    padding: 30px;
+    border-radius: 25px;
+    width: 50%;
+    max-width: 1200px;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    color: #4e342e;
+}
+
+#dateTime {
+    font-size: 1rem;
+    color: #666;
+    margin-top: 5px;    
+}
+
+.cont-section {
+    display: flex;
+    justify-content: space-between;
+    gap: 2%;
+    margin-bottom: 40px;
+    flex-wrap: nowrap; /* Ensure all stay in one row */
+}
+
+/* Individual section blocks */
+.container-search,
+.container-add-product,
+.container-edit-product {
+    width: 32%;
+    padding: 20px;
+    border-radius: 15px;
+}
+
+/* Section Headings */
+.container-search h2,
+.container-add-product h2,
+.container-edit-product h2 {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+/* Form Styling */
+form, select #seach-form {
+    display: block;
+    margin-top: 10px;
+    font-weight: normal;
+    background-color: bisque;
+}
+
+input, option, select#search-type,
+form select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border-radius: 5px;
+    font-size: 0.95 rem;
+    background-color: floralwhite ;
+    border-style: hidden;
+}
+
+/* Buttons */
+button {
+    margin-top: 15px;
+    padding: 10px 15px;
+    background-color: #5d4037;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #6d4c41;
+}
+
+/* Product List Section */
+.list-products {
+    border-radius: 15px;
+    padding: 25px;
+    margin-top: 30px;    
+}
+
+.list-products h2 {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+#product-list {
+    list-style-type: none;
+    margin-top: 20px;
+    padding: 0;
+}
+
+#product-list li {
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    background-color: floralwhite;
+}
+
+#product-list button {
+    margin-left: 10px;
+    padding: 5px 10px;
+    font-size: 0.85rem;
+}
+
+/* Utility Buttons */
+.list-products button {
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    margin-top: 40px;
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+    .form-sections {
+        flex-direction: column;
+    }
+
+    .container-search,
+    .container-add-product,
+    .container-edit-product {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+}
+
+/* Hiding the form content initially */
+.container-edit-product form {
+    display: none;
+}
+
+.container-edit-product:hover form{
+    display: block;
+}
+.container-add-product form {
+    display: none;
+}
+
+.container-add-product:hover form{
+    display: block;
+}
+
+.container-search #search-form {
+    display: none;
+}
+
+.container-search:hover #search-form {
+    display: block;

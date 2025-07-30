@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory Management</title>
-    <link rel="stylesheet" href="style.css"></link>
+    <link rel="stylesheet" href="static/style.css"></link>
     <!-- Include jQuery for AJAX requests -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script>
@@ -163,7 +163,7 @@
         }
 
         $(document).ready(function() {
-            fetchProducts();  // Load products when the page is ready
+           // fetchProducts();  
 
             $('#search-btn').click(searchProduct);  // Attach search functionality
             $('#add-product-btn').click(addProduct);  // Attach add product functionality
@@ -171,9 +171,9 @@
         });
     </script>
 </head>
-<body style="text-size-adjust: 100%">
-    <div1 style="display:block; background-color: bisque; margin-left: auto; margin-right:auto; width: 69%; border-radius: 25px;">
-        <div2 style="display:block; text-align: center;">
+<body>
+    <div class="pad">
+        <div class="header">
             <h1>Inventory Management</h1>
             <p id="dateTime"></p>
             <script>
@@ -181,72 +181,79 @@
             let text = d.toLocaleString();
             document.getElementById("dateTime").innerHTML = text;
             </script>
-        </div2>
-        <div3 style="display:block; width: 33%;">
-            <h2 style="text-align: center;">Search Products</h2>
-            <div8>
-                <select id="search-type">
-                    <option value="name">Name</option>
-                    <option value="description">Description</option>
-                    <option value="category">Category</option>
-                    <option value="supplier">Supplier</option>
-                    <option value="quantity">Quantity</option>
-                    <option value="id">ID</option> <!-- Option for searching by ID -->
-                </select>
-                <input type="text" id="search-term" placeholder="Search term" />
-                <button id="search-btn">Search</button>
-            </div8>
-        </div3>            
-        <div4 style="display:block; width: 33%;">
-            <h2>Add New Product</h2>
-            <form id="add-product-form"> 
-                <label for="product-name">Name: </label>
-                <input type="text" id="product-name" placeholder="Product Name" /><br/>
-                <label for="product-desc">Description: </label>
-                <input type="text" id="product-desc" placeholder="Description" /><br/>
-                <label for="product-category">Category: </label>
-                <input type="text" id="product-category" placeholder="Category" /><br/>
-                <label for="product-quantity">Quantity: </label>
-                <input type="number" id="product-quantity" placeholder="Quantity" /><br/>
-                <label for="product-price">Price: </label>
-                <input type="number" id="product-price" placeholder="Price" /><br/>
-                <label for="product-supplier">Supplier: </label>
-                <input type="text" id="product-supplier" placeholder="Supplier" /><br/>
-                <button id="add-product-btn">Add Product</button>
+        </div>
+        <div class="cont-section">
+            <div class="container-search">
+                <h2>Search Products</h2>
+                <div id="search-form">
+                    <select id="search-type">
+                        <option id="name" value="name">Name</option>
+                        <option value="description">Description</option>
+                        <option value="category">Category</option>
+                        <option value="supplier">Supplier</option>
+                        <option value="quantity">Quantity</option>
+                        <option value="id">ID</option> 
+                    </select>
+                    <input type="text" id="search-term" /><br/>
+                    <button id="search-btn">Search</button>
+                </div>
+            </div>            
+            <div class="container-add-product">
+                <h2>Add New Product</h2>
+                <form class="form"> 
+                    <label for="product-name">Name: </label>
+                    <input type="text" id="product-name"/><br/>
+                    <label for="product-desc">Description: </label>
+                    <input type="text" id="product-desc"/><br/>
+                    <label for="product-category">Category: </label>
+                    <input type="text" id="product-category"/><br/>
+                    <label for="product-quantity">Quantity: </label>
+                    <input type="number" id="product-quantity"/><br/>
+                    <label for="product-price">Price: </label>
+                    <input type="number" id="product-price"/><br/>
+                    <label for="product-supplier">Supplier: </label>
+                    <input type="text" id="product-supplier"/><br/>
+                    <button id="add-product-btn">Add Product</button>
+                </form>
+            </div>
+            <div class="container-edit-product">
+            <h2>Edit Product</h2>    
+            <form class="form">
+                <input type="hidden" id="edit-product-id" />
+                <label for="edit-product-name">Name: </label>
+                <input type="text" id="edit-product-name" /><br/>
+                <label for="edit-product-desc">Description: </label>
+                <input type="text" id="edit-product-desc" /><br/>
+                <label for="edit-product-category">Category: </label>
+                <input type="text" id="edit-product-category" /><br/>
+                <label for="edit-product-quantity">Quantity: </label>
+                <input type="number" id="edit-product-quantity" /><br/>
+                <label for="edit-product-price">Price: </label>
+                <input type="number" id="edit-product-price" /><br/>
+                <label for="edit-product-supplier">Supplier: </label>
+                <input type="text" id="edit-product-supplier" /><br/>
+                <button type="button" id="update-product-btn">Update Product</button>        
             </form>
-        </div4>
-        <div5 style="display:block; width: 33%;">
-        <h2>Edit Product</h2>    
-        <form id="edit-product-form">
-            <input type="hidden" id="edit-product-id" />
-            <label for="edit-product-name">Name: </label>
-            <input type="text" id="edit-product-name" /><br/>
-            <label for="edit-product-desc">Description: </label>
-            <input type="text" id="edit-product-desc" /><br/>
-            <label for="edit-product-category">Category: </label>
-            <input type="text" id="edit-product-category" /><br/>
-            <label for="edit-product-quantity">Quantity: </label>
-            <input type="number" id="edit-product-quantity" /><br/>
-            <label for="edit-product-price">Price: </label>
-            <input type="number" id="edit-product-price" /><br/>
-            <label for="edit-product-supplier">Supplier: </label>
-            <input type="text" id="edit-product-supplier" /><br/>
-            <button type="button" id="update-product-btn">Update Product</button>        
-        </form>
-        </div5>
-        <div6>
+            </div>
+        </div>
+        <div class="list-products">
             <h2>Product List</h2>
             <button onclick="fetchProducts()">Get All Products</button>
             <button onclick="clearList()">Clear</button>
+            <script>
+            function clearList() {
+            $('#product-list').empty();}   
+            </script>
             <button onclick="printList()">Print</button>
             <ul id="product-list">
                 <!-- Products will be listed here -->
             </ul>
-        </div6>
-        <div7>
-
-        </div7>
-    </div1>
+        </div>
+        <div clas="footer">
+        <p>CopyMe</p>
+        <p>Lucia Macakova</p>
+        </div>
+    </div>
     
 </body>
 </html>
