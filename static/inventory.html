@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory Management</title>
-    <link rel="stylesheet" href="static/style.css"></link>
+    <link rel="stylesheet" href="<link rel="stylesheet" href="/static/style.css">"></link>
     <!-- Include jQuery for AJAX requests -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script>
@@ -169,6 +169,32 @@
             $('#add-product-btn').click(addProduct);  // Attach add product functionality
             $('#update-product-btn').click(updateProduct);  // Attach update product functionality
         });
+
+        function printList() {
+    // Clone the product list to avoid altering the live DOM
+    let content = $('#product-list').clone();
+
+    // Get current date and time
+    const currentDate = new Date().toLocaleString();
+
+    // Create a printable window
+    const printWindow = window.open('', '', 'height=600,width=800');
+
+    printWindow.document.write('<html><head><title>Print Product List</title>');
+    printWindow.document.write('<style>body { font-family: Arial, sans-serif; }</style>');
+    printWindow.document.write('</head><body>');
+    printWindow.document.write('<h1>Product List</h1>');
+    printWindow.document.write('<ul>' + content.html() + '</ul>');
+    printWindow.document.write('<hr><p style="text-align:right;">Printed on: ' + currentDate + '</p>');
+    printWindow.document.write('</body></html>');
+
+    printWindow.document.close();
+    printWindow.focus();
+
+    printWindow.print();
+    printWindow.close();
+}
+    
     </script>
 </head>
 <body>
