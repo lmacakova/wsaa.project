@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Inventory Management</title>
+
+  <!-- Correct Flask static link -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+
+  <!-- jQuery for AJAX -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+  <div class="pad">
+    <div class="header">
+      <h1>Inventory Management</h1>
+      <p id="dateTime"></p>
+    </div>
+
+    <div class="cont-section">
+      <div class="container-search">
+        <h2>Search Products</h2>
+        <div id="search-form">
+          <select id="search-type">
+            <option id="name" value="name">Name</option>
+            <option value="description">Description</option>
+            <option value="category">Category</option>
+            <option value="supplier">Supplier</option>
+            <option value="quantity">Quantity</option>
+            <option value="id">ID</option>
+          </select>
+          <input type="text" id="search-term" />
+          <br/>
+          <button id="search-btn" type="button">Search</button>
+        </div>
+      </div>
+
+      <div class="container-add-product">
+        <h2>Add New Product</h2>
+        <form class="form" onsubmit="return false;">
+          <label for="product-name">Name: </label>
+          <input type="text" id="product-name"/><br/>
+          <label for="product-desc">Description: </label>
+          <input type="text" id="product-desc"/><br/>
+          <label for="product-category">Category: </label>
+          <input type="text" id="product-category"/><br/>
+          <label for="product-quantity">Quantity: </label>
+          <input type="number" id="product-quantity"/><br/>
+          <label for="product-price">Price: </label>
+          <input type="number" id="product-price"/><br/>
+          <label for="product-supplier">Supplier: </label>
+          <input type="text" id="product-supplier"/><br/>
+          <button id="add-product-btn" type="button">Add Product</button>
+        </form>
+      </div>
+
+      <div class="container-edit-product">
+        <h2>Edit Product</h2>
+        <form class="form" onsubmit="return false;">
+          <input type="hidden" id="edit-product-id" />
+          <label for="edit-product-name">Name: </label>
+          <input type="text" id="edit-product-name" /><br/>
+          <label for="edit-product-desc">Description: </label>
+          <input type="text" id="edit-product-desc" /><br/>
+          <label for="edit-product-category">Category: </label>
+          <input type="text" id="edit-product-category" /><br/>
+          <label for="edit-product-quantity">Quantity: </label>
+          <input type="number" id="edit-product-quantity" /><br/>
+          <label for="edit-product-price">Price: </label>
+          <input type="number" id="edit-product-price" /><br/>
+          <label for="edit-product-supplier">Supplier: </label>
+          <input type="text" id="edit-product-supplier" /><br/>
+          <button type="button" id="update-product-btn">Update Product</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="list-products">
+      <h2>Product List</h2>
+      <button type="button" onclick="fetchProducts()">Get All Products</button>
+      <button type="button" onclick="clearList()">Clear</button>
+      <button type="button" onclick="printList()">Print</button>
+      <ul id="product-list"></ul>
+    </div>
+
+    <div class="footer">
+      <p>CopyMe</p>
+      <p>Lucia Macakova</p>
+    </div>
+  </div>
+
+  <script>
+    // Date/time in header
+    (function(){
+      const d = new Date();
+      document.getElementById("dateTime").textContent = d.toLocaleString();
+    })();
+
+    // Fetch all products
+    function fetchProducts() {
+      $.ajax({
+        url: '/api/products',
+        type: 'GET',
+        success: function(data) {
+          let productList = $('#product-list');
+          productList.empty();
+          data.forEach(function(product) {
+            let listItem = `
+              <li>
+                ID: ${product.id}, Name: ${product.name}, Description: ${product.description},
+                Category: ${product.category}, Quantity: ${product.quantity},
+                Supplier: ${product.supplier}
+                <button type="button" onclick="loadProductForEdit(${product.id})">Edit</button>
+                <button type="button" onclick="deleteProduct(${product.id})">Delete</button>
+              </li>`;
+            productList.append(listItem);
+          });
+        },
+        error: function() { alert('Error fetching products'); }
+      });
+    }
+
+    // Search
+    function searchProduct() {
+      let searchType = $('#search-type').val();
+      let searchTerm = $('#search-term').val();
+
+      $.ajax({
+        url: `/api/products/search/${searchType}`,
+        type: 'GET',
+        data: { [searchType]: searchTerm },
+        success: function(data) {
+          let productList = $('#product-list');
+          productList.empty();
+          if (data && data.length > 0) {
+            data.forEach(function(product) {
+              let listItem = `
+                <li>
+                  ID: ${product.id}, Name: ${product.name}, Description: ${product.description},
+                  Category: ${product.category}, Quantity: ${product.quantity},
+                  Supplier: ${product.supplier}
+                  <button type="button" onclick="loadProductForEdit(${product.id})">Edit</button>
+                  <button type="button" onclick="deleteProduct(${product.id})">Delete</button>
+                </li>`;
+              productList.append(listItem);
+            });
+          } else {
+            productList.append('<li>No product found with this search.</li>');
+          }
+        },
+        error: function() { alert('Error searching products'); }
+      });
+    }
+
+    // Add
+    function addProduct() {
+      let productData = {
+        name: $('#product-name').val(),
+        description: $('#product-desc').val(),
+        category: $('#product-category').val(),
+        quantity: $('#product-quantity').val(),
+        price: $('#product-price').val(),
+        supplier: $('#product-supplier').val()
+      };
+
+      $.ajax({
+        url: '/api/products',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(productData),
+        success: function(response) {
+          alert(response.message);
+          fetchProducts();
+        },
+        error: function(error) {
+          alert((error.responseJSON && error.responseJSON.error) || 'Error adding product');
+        }
+      });
+    }
+
+    // Load for edit
+    function loadProductForEdit(productId) {
+      $.ajax({
+        url: `/api/products/${productId}`,
+        type: 'GET',
+        success: function(product) {
+          $('#edit-product-id').val(product.id);
+          $('#edit-product-name').val(product.name);
+          $('#edit-product-desc').val(product.description);
+          $('#edit-product-category').val(product.category);
+          $('#edit-product-quantity').val(product.quantity);
+          $('#edit-product-price').val(product.price);
+          $('#edit-product-supplier').val(product.supplier);
+          $('.container-edit-product').show();
+        },
+        error: function() { alert('Error loading product for edit'); }
+      });
+    }
+
+    // Update
+    function updateProduct() {
+      let productId = $('#edit-product-id').val();
+      let productData = {
+        name: $('#edit-product-name').val(),
+        description: $('#edit-product-desc').val(),
+        category: $('#edit-product-category').val(),
+        quantity: $('#edit-product-quantity').val(),
+        price: $('#edit-product-price').val(),
+        supplier: $('#edit-product-supplier').val()
+      };
+
+      $.ajax({
+        url: `/api/products/${productId}`,
+        type: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify(productData),
+        success: function(response) {
+          alert(response.message);
+          fetchProducts();
+          $('.container-edit-product').hide();
+        },
+        error: function(error) {
+          alert((error.responseJSON && error.responseJSON.error) || 'Error updating product');
+        }
+      });
+    }
+
+    // Delete
+    function deleteProduct(productId) {
+      $.ajax({
+        url: `/api/products/${productId}`,
+        type: 'DELETE',
+        success: function(response) {
+          alert(response.message);
+          fetchProducts();
+        },
+        error: function() { alert('Error deleting product'); }
+      });
+    }
+
+    function clearList() { $('#product-list').empty(); }
+
+    function printList() {
+      let content = $('#product-list').clone();
+      const currentDate = new Date().toLocaleString();
+      const w = window.open('', '', 'height=600,width=800');
+      w.document.write('<html><head><title>Print Product List</title>');
+      w.document.write('<style>body { font-family: Arial, sans-serif; }</style>');
+      w.document.write('</head><body>');
+      w.document.write('<h1>Product List</h1>');
+      w.document.write('<ul>' + content.html() + '</ul>');
+      w.document.write('<hr><p style="text-align:right;">Printed on: ' + currentDate + '</p>');
+      w.document.write('</body></html>');
+      w.document.close(); w.focus(); w.print(); w.close();
+    }
+
+    // Wire up buttons after DOM is ready
+    $(function() {
+      $('#search-btn').on('click', searchProduct);
+      $('#add-product-btn').on('click', addProduct);
+      $('#update-product-btn').on('click', updateProduct);
+      // Optionally: fetchProducts(); // auto-load on page open
+    });
+  </script>
+</body>
+</html>
+
+
+
+
