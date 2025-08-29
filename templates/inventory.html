@@ -10,7 +10,6 @@
 
   <!-- jQuery for AJAX -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-</head>
 <body>
   <div class="pad">
     <div class="header">
@@ -82,6 +81,25 @@
       <button type="button" onclick="clearList()">Clear</button>
       <button type="button" onclick="printList()">Print</button>
       <ul id="product-list"></ul>
+
+      <!-- 2) Include html2pdf.js (CDN) -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+      <script>
+      document.getElementById('btnExport').addEventListener('click', () => {
+      const element = document.getElementById('product-list');
+      const opts = {
+      margin:       10,
+      filename:     'inventory.pdf',
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().from(element).set(opts).save();
+      });
+      </script>
+
+
     </div>
 
     <div class="footer">
@@ -249,28 +267,13 @@
     }
 
     function clearList() { $('#product-list').empty(); }
-
-    function printList() {
-      let content = $('#product-list').clone();
-      const currentDate = new Date().toLocaleString();
-      const w = window.open('', '', 'height=600,width=800');
-      w.document.write('<html><head><title>Print Product List</title>');
-      w.document.write('<style>body { font-family: Arial, sans-serif; }</style>');
-      w.document.write('</head><body>');
-      w.document.write('<h1>Product List</h1>');
-      w.document.write('<ul>' + content.html() + '</ul>');
-      w.document.write('<hr><p style="text-align:right;">Printed on: ' + currentDate + '</p>');
-      w.document.write('</body></html>');
-      w.document.close(); w.focus(); w.print(); w.close();
-    }
-
-    // Wire up buttons after DOM is ready
-    $(function() {
-      $('#search-btn').on('click', searchProduct);
-      $('#add-product-btn').on('click', addProduct);
-      $('#update-product-btn').on('click', updateProduct);
+     // Wire up buttons after DOM is ready
+    //$(function() {
+    //  $('#search-btn').on('click', searchProduct);
+    //  $('#add-product-btn').on('click', addProduct);
+    // $('#update-product-btn').on('click', updateProduct);
       // Optionally: fetchProducts(); // auto-load on page open
-    });
+    //});
   </script>
 </body>
 </html>
