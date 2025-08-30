@@ -54,8 +54,8 @@ body {
 .container-add-product,
 .container-edit-product {
     width: 32%;
-    padding: 20px;
-    border-radius: 15px;
+    padding: 2px;
+    border-radius: 2px;
 }
 
 /* Section Headings */
@@ -63,7 +63,7 @@ body {
 .container-add-product h2,
 .container-edit-product h2 {
     text-align: center;
-    margin-bottom: 15px;
+    margin-bottom: 5px;
 }
 
 /* Form Styling */
@@ -148,7 +148,7 @@ button:hover {
 /* Responsive Design */
 @media (max-width: 900px) {
     .form-sections {
-        flex-direction: column;
+        flex-direction: row;
     }
 
     .container-search,

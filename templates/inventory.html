@@ -5,32 +5,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Inventory Management</title>
 
-  <!-- Correct Flask static link -->
-  <link rel="stylesheet" href={{ url_for('static', filename='style.css')}}/>
+  <!-- Flask static link (quoted) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 
-  <!-- jQuery for AJAX -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <!-- jQuery (deferred) -->
+  <script defer src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+  <!-- html2pdf (deferred) -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
 <body>
   <div class="pad">
     <div class="header">
       <h1>Inventory Management</h1>
-      <p id="dateTime"></p>
+      <p id="dateTime" aria-live="polite"></p>
     </div>
+
+    <div id="msg" role="status" aria-live="polite"></div>
 
     <div class="cont-section">
       <div class="container-search">
         <h2>Search Products</h2>
         <div id="search-form">
+          <label for="search-type" class="sr-only">Search by</label>
           <select id="search-type">
-            <option id="name" value="name">Name</option>
+            <option value="name">Name</option>
             <option value="description">Description</option>
             <option value="category">Category</option>
             <option value="supplier">Supplier</option>
             <option value="quantity">Quantity</option>
             <option value="id">ID</option>
           </select>
-          <input type="text" id="search-term" />
-          <br/>
+          <input type="text" id="search-term" placeholder="Enter search term" />
           <button id="search-btn" type="button">Search</button>
         </div>
       </div>
@@ -39,35 +45,35 @@
         <h2>Add New Product</h2>
         <form class="form" onsubmit="return false;">
           <label for="product-name">Name: </label>
-          <input type="text" id="product-name"/><br/>
+          <input type="text" id="product-name" required /><br/>
           <label for="product-desc">Description: </label>
-          <input type="text" id="product-desc"/><br/>
+          <input type="text" id="product-desc" /><br/>
           <label for="product-category">Category: </label>
-          <input type="text" id="product-category"/><br/>
+          <input type="text" id="product-category" /><br/>
           <label for="product-quantity">Quantity: </label>
-          <input type="number" id="product-quantity"/><br/>
+          <input type="number" id="product-quantity" min="0" step="1" required /><br/>
           <label for="product-price">Price: </label>
-          <input type="number" id="product-price"/><br/>
+          <input type="number" id="product-price" min="0" step="0.01" required /><br/>
           <label for="product-supplier">Supplier: </label>
-          <input type="text" id="product-supplier"/><br/>
+          <input type="text" id="product-supplier" /><br/>
           <button id="add-product-btn" type="button">Add Product</button>
         </form>
       </div>
 
-      <div class="container-edit-product">
+      <div class="container-edit-product" style="display:none;">
         <h2>Edit Product</h2>
         <form class="form" onsubmit="return false;">
           <input type="hidden" id="edit-product-id" />
           <label for="edit-product-name">Name: </label>
-          <input type="text" id="edit-product-name" /><br/>
+          <input type="text" id="edit-product-name" required /><br/>
           <label for="edit-product-desc">Description: </label>
           <input type="text" id="edit-product-desc" /><br/>
           <label for="edit-product-category">Category: </label>
           <input type="text" id="edit-product-category" /><br/>
           <label for="edit-product-quantity">Quantity: </label>
-          <input type="number" id="edit-product-quantity" /><br/>
+          <input type="number" id="edit-product-quantity" min="0" step="1" required /><br/>
           <label for="edit-product-price">Price: </label>
-          <input type="number" id="edit-product-price" /><br/>
+          <input type="number" id="edit-product-price" min="0" step="0.01" required /><br/>
           <label for="edit-product-supplier">Supplier: </label>
           <input type="text" id="edit-product-supplier" /><br/>
           <button type="button" id="update-product-btn">Update Product</button>
@@ -77,29 +83,11 @@
 
     <div class="list-products">
       <h2>Product List</h2>
-      <button type="button" onclick="fetchProducts()">Get All Products</button>
-      <button type="button" onclick="clearList()">Clear</button>
-      <button type="button" onclick="printList()">Print</button>
-      <ul id="product-list"></ul>
-
-      <!-- 2) Include html2pdf.js (CDN) -->
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
-      <script>
-      document.getElementById('btnExport').addEventListener('click', () => {
-      const element = document.getElementById('product-list');
-      const opts = {
-      margin:       10,
-      filename:     'inventory.pdf',
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-      html2pdf().from(element).set(opts).save();
-      });
-      </script>
-
-
+      <button type="button" id="btnFetch">Get All Products</button>
+      <button type="button" id="btnClear">Clear</button>
+      <button type="button" id="btnPrint">Print</button>
+      <button type="button" id="btnExport">Export PDF</button>
+      <ul id="product-list" aria-live="polite"></ul>
     </div>
 
     <div class="footer">
@@ -109,85 +97,100 @@
   </div>
 
   <script>
-    // Date/time in header
-    (function(){
-      const d = new Date();
-      document.getElementById("dateTime").textContent = d.toLocaleString();
-    })();
-
-    function dateTime() {
-      const d = new Date();
-      document.getElementById("dateTime").textContent = d.toLocaleString();
+    // UTIL: status message
+    function showMsg(text, type = 'info') {
+      const el = document.getElementById('msg');
+      el.textContent = text || '';
+      el.className = type; // style in CSS (info/success/error)
     }
-    setInterval(dateTime, 1000);
-    dateTime();
 
+    // Date/time header
+    function updateClock() {
+      document.getElementById("dateTime").textContent = new Date().toLocaleString();
+    }
 
+    // Safe element factory
+    function liForProduct(product) {
+      const li = document.createElement('li');
 
-    // Fetch all products
+      const text = [
+        `ID: ${product.id}`,
+        `Name: ${product.name}`,
+        `Description: ${product.description}`,
+        `Category: ${product.category}`,
+        `Quantity: ${product.quantity}`,
+        `Price: ${product.price}`,
+        `Supplier: ${product.supplier}`
+      ].join(', ');
+
+      const info = document.createElement('span');
+      info.textContent = text; // safe: no HTML injection
+      li.appendChild(info);
+
+      const btnEdit = document.createElement('button');
+      btnEdit.type = 'button';
+      btnEdit.textContent = 'Edit';
+      btnEdit.addEventListener('click', () => loadProductForEdit(product.id));
+      li.appendChild(document.createTextNode(' '));
+      li.appendChild(btnEdit);
+
+      const btnDel = document.createElement('button');
+      btnDel.type = 'button';
+      btnDel.textContent = 'Delete';
+      btnDel.addEventListener('click', () => deleteProduct(product.id));
+      li.appendChild(document.createTextNode(' '));
+      li.appendChild(btnDel);
+
+      return li;
+    }
+
+    // API calls
     function fetchProducts() {
       $.ajax({
         url: '/api/products',
         type: 'GET',
         success: function(data) {
-          let productList = $('#product-list');
-          productList.empty();
-          data.forEach(function(product) {
-            let listItem = `
-              <li>
-                ID: ${product.id}, Name: ${product.name}, Description: ${product.description},
-                Category: ${product.category}, Quantity: ${product.quantity},
-                Supplier: ${product.supplier}
-                <button type="button" onclick="loadProductForEdit(${product.id})">Edit</button>
-                <button type="button" onclick="deleteProduct(${product.id})">Delete</button>
-              </li>`;
-            productList.append(listItem);
-          });
+          const list = document.getElementById('product-list');
+          list.replaceChildren();
+          (data || []).forEach(p => list.appendChild(liForProduct(p)));
+          showMsg(`Loaded ${data.length} product(s).`, 'success');
         },
-        error: function() { alert('Error fetching products'); }
+        error: function() { showMsg('Error fetching products', 'error'); }
       });
     }
 
-    // Search
     function searchProduct() {
-      let searchType = $('#search-type').val();
-      let searchTerm = $('#search-term').val();
+      const searchType = $('#search-type').val();
+      const searchTerm = $('#search-term').val();
 
       $.ajax({
-        url: `/api/products/search/${searchType}`,
+        url: `/api/products/search/${encodeURIComponent(searchType)}`,
         type: 'GET',
         data: { [searchType]: searchTerm },
         success: function(data) {
-          let productList = $('#product-list');
-          productList.empty();
-          if (data && data.length > 0) {
-            data.forEach(function(product) {
-              let listItem = `
-                <li>
-                  ID: ${product.id}, Name: ${product.name}, Description: ${product.description},
-                  Category: ${product.category}, Quantity: ${product.quantity},
-                  Supplier: ${product.supplier}
-                  <button type="button" onclick="loadProductForEdit(${product.id})">Edit</button>
-                  <button type="button" onclick="deleteProduct(${product.id})">Delete</button>
-                </li>`;
-              productList.append(listItem);
-            });
+          const list = document.getElementById('product-list');
+          list.replaceChildren();
+          if (data && data.length) {
+            data.forEach(p => list.appendChild(liForProduct(p)));
+            showMsg(`Found ${data.length} matching product(s).`, 'success');
           } else {
-            productList.append('<li>No product found with this search.</li>');
+            const li = document.createElement('li');
+            li.textContent = 'No product found with this search.';
+            list.appendChild(li);
+            showMsg('No matches.', 'info');
           }
         },
-        error: function() { alert('Error searching products'); }
+        error: function() { showMsg('Error searching products', 'error'); }
       });
     }
 
-    // Add
     function addProduct() {
-      let productData = {
+      const productData = {
         name: $('#product-name').val(),
         description: $('#product-desc').val(),
         category: $('#product-category').val(),
-        quantity: $('#product-quantity').val(),
-        price: $('#product-price').val(),
+        quantity: Number($('#product-quantity').val()),
+        price: Number($('#product-price').val()),
         supplier: $('#product-supplier').val()
       };
 
@@ -197,43 +200,42 @@
         contentType: 'application/json',
         data: JSON.stringify(productData),
         success: function(response) {
-          alert(response.message);
+          showMsg(response.message || 'Product added.', 'success');
           fetchProducts();
         },
         error: function(error) {
-          alert((error.responseJSON && error.responseJSON.error) || 'Error adding product');
+          showMsg((error.responseJSON && error.responseJSON.error) || 'Error adding product', 'error');
         }
       });
     }
 
-    // Load for edit
     function loadProductForEdit(productId) {
       $.ajax({
         url: `/api/products/${productId}`,
         type: 'GET',
         success: function(product) {
           $('#edit-product-id').val(product.id);
-          $('#edit-product-name').val(product.name);
-          $('#edit-product-desc').val(product.description);
-          $('#edit-product-category').val(product.category);
-          $('#edit-product-quantity').val(product.quantity);
-          $('#edit-product-price').val(product.price);
-          $('#edit-product-supplier').val(product.supplier);
+          $('#edit-product-name').val(product.name || '');
+          $('#edit-product-desc').val(product.description || '');
+          $('#edit-product-category').val(product.category || '');
+          $('#edit-product-quantity').val(product.quantity ?? 0);
+          $('#edit-product-price').val(product.price ?? 0);
+          $('#edit-product-supplier').val(product.supplier || '');
           $('.container-edit-product').show();
+          showMsg(`Loaded product #${product.id} for editing.`, 'info');
         },
-        error: function() { alert('Error loading product for edit'); }
+        error: function() { showMsg('Error loading product for edit', 'error'); }
       });
     }
 
-    // Update
     function updateProduct() {
-      let productId = $('#edit-product-id').val();
-      let productData = {
+      const productId = $('#edit-product-id').val();
+      const productData = {
         name: $('#edit-product-name').val(),
         description: $('#edit-product-desc').val(),
         category: $('#edit-product-category').val(),
-        quantity: $('#edit-product-quantity').val(),
-        price: $('#edit-product-price').val(),
+        quantity: Number($('#edit-product-quantity').val()),
+        price: Number($('#edit-product-price').val()),
         supplier: $('#edit-product-supplier').val()
       };
 
@@ -243,40 +245,70 @@
         contentType: 'application/json',
         data: JSON.stringify(productData),
         success: function(response) {
-          alert(response.message);
+          showMsg(response.message || 'Product updated.', 'success');
           fetchProducts();
           $('.container-edit-product').hide();
         },
         error: function(error) {
-          alert((error.responseJSON && error.responseJSON.error) || 'Error updating product');
+          showMsg((error.responseJSON && error.responseJSON.error) || 'Error updating product', 'error');
         }
       });
     }
 
-    // Delete
     function deleteProduct(productId) {
       $.ajax({
         url: `/api/products/${productId}`,
         type: 'DELETE',
         success: function(response) {
-          alert(response.message);
+          showMsg(response.message || 'Product deleted.', 'success');
           fetchProducts();
         },
-        error: function() { alert('Error deleting product'); }
+        error: function() { showMsg('Error deleting product', 'error'); }
       });
     }
 
-    function clearList() { $('#product-list').empty(); }
-     // Wire up buttons after DOM is ready
-    //$(function() {
-    //  $('#search-btn').on('click', searchProduct);
-    //  $('#add-product-btn').on('click', addProduct);
-    // $('#update-product-btn').on('click', updateProduct);
-      // Optionally: fetchProducts(); // auto-load on page open
-    //});
+    function clearList() {
+      document.getElementById('product-list').replaceChildren();
+      showMsg('Cleared list.');
+    }
+
+    function printList() {
+      window.print();
+    }
+
+    function exportPDF() {
+      const element = document.getElementById('product-list');
+      const opts = {
+        margin: 10,
+        filename: 'inventory.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().from(element).set(opts).save();
+    }
+
+    // Wire up events once DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      updateClock();
+      setInterval(updateClock, 1000);
+
+      document.getElementById('btnFetch').addEventListener('click', fetchProducts);
+      document.getElementById('btnClear').addEventListener('click', clearList);
+      document.getElementById('btnPrint').addEventListener('click', printList);
+      document.getElementById('btnExport').addEventListener('click', exportPDF);
+
+      document.getElementById('search-btn').addEventListener('click', searchProduct);
+      document.getElementById('add-product-btn').addEventListener('click', addProduct);
+      document.getElementById('update-product-btn').addEventListener('click', updateProduct);
+
+      // Optional: auto-load on page open
+      // fetchProducts();
+    });
   </script>
 </body>
 </html>
+
 
 
 
