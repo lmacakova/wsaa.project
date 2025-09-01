@@ -80,10 +80,7 @@ First, I created a database inventory, locally on my machine, with a table produ
 [^5]:   https://www.w3schools.com/js/js_htmldom.asp  
 [^6]:   https://www.w3schools.com/css/
 
-
-
-
- 
+Deployed: https://luciamacakova.pythonanywhere.com/
 
 
 Contact:\
