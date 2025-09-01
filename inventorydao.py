@@ -75,40 +75,53 @@ class ProductDAO:
                 return cursor.fetchall()
         finally:
             conn.close()
-
-
-
-
+    
     def insert(data):
         conn = get_conn()
         try:
-            with conn.cursor() as cursor:
-                # First, check if a product with the same name already exists
-                sql_check = "SELECT COUNT(*) FROM product WHERE name = %s"
-                cursor.execute(sql_check, (data['name'],))
-                result = cursor.fetchone()
-                if result[0] > 0:
-                    return {"error": "Product with this name already exists."}, 400  # Handle duplicate product name
-                
-                # If no duplicate, proceed with inserting the new product
+            with conn.cursor() as cur:
+                # Duplicate check (alias the count to a stable name)
+                cur.execute("SELECT COUNT(*) AS cnt FROM product WHERE name=%s", (data['name'],))
+                row = cur.fetchone()
+                if row is None:
+                    raise RuntimeError("Duplicate check failed (no row)")
+
+                # Row can be a dict (DictCursor) or a tuple (regular cursor)
+                cnt = row['cnt'] if isinstance(row, dict) else row[0]
+                if cnt > 0:
+                    raise ValueError("DUPLICATE_NAME")
+
+                # Insert
                 sql = """
                     INSERT INTO product (name, description, quantity, category, price, supplier)
                     VALUES (%s, %s, %s, %s, %s, %s)
                 """
-                values = (
-                    data['name'],
+                vals = (
+                    data.get('name'),
                     data.get('description'),
-                    data.get('quantity', 0),
+                    int(data.get('quantity') or 0),
                     data.get('category'),
-                    data.get('price'),
+                    float(data.get('price') or 0),
                     data.get('supplier')
                 )
-                cursor.execute(sql, values)
-                conn.commit()
-                return {"message": "Product added", "product_id": cursor.lastrowid}, 201  # Return success with product ID
+                cur.execute(sql, vals)
 
+                if cur.rowcount != 1:
+                    raise RuntimeError(f"INSERT affected {cur.rowcount} rows")
+
+                conn.commit()
+                new_id = getattr(cur, "lastrowid", None)
+                if new_id is None:
+                    # Some drivers keep lastrowid on the connection
+                    new_id = getattr(conn, "insert_id", None)
+                return new_id
+        except Exception:
+            conn.rollback()
+            raise
         finally:
             conn.close()
+
+    
 
     def update(product_id, data):
         conn = get_conn()

@@ -7,9 +7,11 @@
 
 body {
     font-family: Arial, sans-serif;
-    background-image: url("https://images.pexels.com/photos/1797428/pexels-photo-1797428.jpeg");   
+    background-image: url("https://images.pexels.com/photos/33703942/pexels-photo-33703942.jpeg");   
     background-size: cover; 
     background-position: center;
+    background-repeat: repeat-y;
+    background-attachment:fixed;
     padding: 20px;
     color: #333;
 }
@@ -20,8 +22,8 @@ body {
     margin: 0 auto;
     padding: 30px;
     border-radius: 25px;
-    width: 50%;
-    max-width: 1200px;
+    width: 75%;
+    height: 95%;
 }
 
 /* Header */
@@ -146,6 +148,9 @@ button:hover {
 }
 
 /* Responsive Design */
+/* When the screen is 900px wide or smaller,
+.form-sections will display its children side by side in a row,
+which is practical for smaller screens like screens of tablets or cell phones*/
 @media (max-width: 900px) {
     .form-sections {
         flex-direction: row;
@@ -159,7 +164,7 @@ button:hover {
     }
 }
 
-/* Hiding the form content initially */
+/* Hiding the form content */
 .container-edit-product form {
     display: none;
 }
@@ -181,3 +186,4 @@ button:hover {
 
 .container-search:hover #search-form {
     display: block;
+}    

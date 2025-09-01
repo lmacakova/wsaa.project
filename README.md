@@ -65,5 +65,4 @@ This project uses **SQLite** for storage.
 
 
 ## Resources:
- 
 
