@@ -89,7 +89,9 @@
     </div>
   </div>
 
-  <script>
+  <script>/* As webpage/aplication is rendered by web browser from up to down (<head> to </body>)
+  I decided to place the scripts in the bottom before </body>. This prevent the scripts to be rendered
+  before appropriate element */
     // CRUD
     // Fetch all products
     function fetchProducts() {
